@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/TwiN/gatus/v5/alerting/alert"
 	"github.com/TwiN/gatus/v5/client"
@@ -31,6 +33,10 @@ type Override struct {
 	Group      string `yaml:"group"`
 	WebhookURL string `yaml:"webhook-url"`
 }
+
+const (
+	DISCORD_WEBHOOK_URL_PREFIX = "$"
+)
 
 // IsValid returns whether the provider's configuration is valid
 func (provider *AlertProvider) IsValid() bool {
@@ -143,6 +149,19 @@ func (provider *AlertProvider) getWebhookURLForGroup(group string) string {
 			}
 		}
 	}
+
+	// Check if the discord Webhook url is a secret
+	if strings.HasPrefix(provider.WebhookURL, DISCORD_WEBHOOK_URL_PREFIX) {
+		substr := strings.ReplaceAll(provider.WebhookURL, DISCORD_WEBHOOK_URL_PREFIX, "")
+		v, found := os.LookupEnv(substr)
+		if !found {
+			fmt.Println("error fetching discord webhook url env var")
+		}
+
+		fmt.Printf("discord webhook url value: %s\n", v)
+		provider.WebhookURL = v
+	}
+
 	return provider.WebhookURL
 }
 

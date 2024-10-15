@@ -1,0 +1,13 @@
+name: Gatus (ai-cfia fork) workflows
+
+on:
+  push:
+
+jobs:
+  deploy-to-ghcr:
+    uses: ai-cfia/github-workflows/.github/workflows/workflow-build-push-container-github-registry.yml@main
+    with:
+      container-name: ${{ github.event.repository.name }}
+      tag: ${{ github.sha }}
+      registry: ghcr.io/ai-cfia
+    secrets: inherit
